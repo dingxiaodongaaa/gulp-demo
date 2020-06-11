@@ -74,65 +74,103 @@
 
 // 通过回调的方式
 
-exports.callback = done => {
-    console.log("cllback task")
-    done()
-}
+// exports.callback = done => {
+//     console.log("cllback task")
+//     done()
+// }
 
-exports.callback_error = done => {
-    console.log("cllback task")
-    done(new Error('task failed!'))
-}
+// exports.callback_error = done => {
+//     console.log("cllback task")
+//     done(new Error('task failed!'))
+// }
 
-// 同样也是错误优先回调函数，当发生错误之后就会抛出错误并停止执行未执行的任务
+// // 同样也是错误优先回调函数，当发生错误之后就会抛出错误并停止执行未执行的任务
 
-// Promise 
+// // Promise 
 
-// 避免回调过深的问题
+// // 避免回调过深的问题
 
-exports.promise = () => {
-    console.log('promise task')
-    return Promise.resolve()
-}
+// exports.promise = () => {
+//     console.log('promise task')
+//     return Promise.resolve()
+// }
 
-// gulp 中会自动地忽略 resolve 中返回地值，所以也不需要给 resole 传值
+// // gulp 中会自动地忽略 resolve 中返回地值，所以也不需要给 resole 传值
 
-exports.promise_error = () => {
-    console.log('promise task')
-    return Promise.reject(new Error('promise task dailed'))
-}
+// exports.promise_error = () => {
+//     console.log('promise task')
+//     return Promise.reject(new Error('promise task dailed'))
+// }
 
-// async await（node8以上）
+// // async await（node8以上）
 
-const timeout = time => {
-    return new Promise(resolve => {
-        setTimeout(resolve, time)
-    })
-}
+// const timeout = time => {
+//     return new Promise(resolve => {
+//         setTimeout(resolve, time)
+//     })
+// }
 
-exports.async = async () => {
-    await timeout(1000)
-    console.log('async task')
-}
+// exports.async = async () => {
+//     await timeout(1000)
+//     console.log('async task')
+// }
 
-// stream 方式（最常用的）
-const fs = require('fs')
+// // stream 方式（最常用的）
+// const fs = require('fs')
 
-exports.stream = () => {
-    const readStream = fs.createReadStream('package.json')
-    const writeStream = fs.createWriteStream('temp.txt')
-    readStream.pipe(writeStream)
-    return readStream
-}
+// exports.stream = () => {
+//     const readStream = fs.createReadStream('package.json')
+//     const writeStream = fs.createWriteStream('temp.txt')
+//     readStream.pipe(writeStream)
+//     return readStream
+// }
 
-// stream 流都有一个 end 事件，当执行完流操作之后就会触发这个 end 事件，通知 gulp 任务结束
+// // stream 流都有一个 end 事件，当执行完流操作之后就会触发这个 end 事件，通知 gulp 任务结束
 
-exports.stream_done = done => {
-    const readStream = fs.createReadStream('package.json')
-    const writeStream = fs.createWriteStream('temp.txt')
-    readStream.pipe(writeStream)
-    readStream.on('end', () => {
-        done()
-    })
-    // return readStream
+// exports.stream_done = done => {
+//     const readStream = fs.createReadStream('package.json')
+//     const writeStream = fs.createWriteStream('temp.txt')
+//     readStream.pipe(writeStream)
+//     readStream.on('end', () => {
+//         done()
+//     })
+//     // return readStream
+// }
+
+// const fs = require('fs')
+// const { Transform } = require('stream')
+
+// exports.default = () => {
+//     // 文件读取流
+//     const read = fs.createReadStream('index.css')
+//     // 文件写入流
+//     const write = fs.createWriteStream('index.min.css')
+//     // 文件转换流
+//     const transform = new Transform({
+//         transform: (chunk, encoding, callback) => {
+//             // 核心转换过程实现
+//             // chunk => 读取流中读取到的内容 （Buffer）
+//             const input = chunk.toString()
+//             const output = input.replace(/\s+/g, '').replace(/\/\*.+?\*\//g, '')
+//             callback(null, output) // callback 是一个错误优先的回调函数，第一个参数应该传入错误对象，如果没有传入错误可以传入 none
+//         }
+//     })
+
+//     // 把读出来的文件流导入写入文件流
+//     read
+//         .pipe(transform)
+//         .pipe(write)
+
+//     return read
+// }
+
+const { src, dest } = require('gulp')
+const cleanCss = require('gulp-clean-css')
+const rename = require('gulp-rename')
+
+exports.default = () => {
+    return src('src/*.css')
+        .pipe(cleanCss())
+        .pipe(rename({ extname: '.min.css' }))
+        .pipe(dest('dist'))
 }
